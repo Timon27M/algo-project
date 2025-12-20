@@ -54,7 +54,6 @@ public class GeneratePresetImpl implements GeneratePreset {
         Army army = new Army(result);
         army.setUnits(result);
         army.setPoints(maxPoints - currentPoints);
-        System.out.println("currentPoints: " + currentPoints);
         return army;
     }
 }
