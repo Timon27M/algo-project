@@ -20,17 +20,11 @@ public class SimulateBattleImpl implements SimulateBattle, PrintBattleLog {
             int computerCount = 0;
 
             while (true) {
-//                Map.Entry<Integer, Unit> playerUnitMap = getCurrentUnit(playerCount, sortedPlayerArmy.getUnits()).entrySet().iterator().next();
-//                Map.Entry<Integer, Unit> computerUnitMap = getCurrentUnit(computerCount, sortedComputerArmy.getUnits()).entrySet().iterator().next();
+                List<Unit> sortedPlayerUnits = sortedPlayerArmy.getUnits();
+                List<Unit> sortedComputerUnits = sortedComputerArmy.getUnits();
 
-
-//                Unit playerUnit = playerUnitMap.getValue();
-//                Unit computerUnit = computerUnitMap.getValue();
-                Unit playerUnit = sortedPlayerArmy.getUnits().size() > playerCount ? sortedPlayerArmy.getUnits().get(playerCount) : null;
-                Unit computerUnit = sortedComputerArmy.getUnits().size() > computerCount ? sortedComputerArmy.getUnits().get(computerCount) : null;
-
-//                playerCount = playerUnitMap.getKey();
-//                computerCount = computerUnitMap.getKey();
+                Unit playerUnit = sortedPlayerUnits.size() > playerCount ? sortedPlayerUnits.get(playerCount) : null;
+                Unit computerUnit = sortedComputerUnits.size() > computerCount ? sortedComputerUnits.get(computerCount) : null;
 
                 if (playerUnit == null && computerUnit == null) {
                     break;
@@ -62,26 +56,6 @@ public class SimulateBattleImpl implements SimulateBattle, PrintBattleLog {
             }
         }
 
-    }
-
-    private Map<Integer, Unit> getCurrentUnit(int count, List<Unit> units) {
-        Map<Integer, Unit> unitMap = new HashMap<>();
-
-        if (units.size() > count) {
-            Unit unit = units.get(count);
-            if (!unit.isAlive()) {
-                units.remove(unit);
-                int newCount = count + 1;
-                unitMap = getCurrentUnit(newCount, units);
-            } else {
-                unitMap.put(count, unit);
-            }
-        } else {
-            unitMap.put(count, null);
-        }
-        System.out.println(count);
-
-        return unitMap;
     }
 
     private void removeUnit(List<Unit> units, Unit unit) {
