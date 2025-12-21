@@ -35,9 +35,11 @@ public class SimulateBattleImpl implements SimulateBattle, PrintBattleLog {
                     if (attackedUnit == null) {
                         break;
                     }
+
                     if (!attackedUnit.isAlive()) {
                         removeUnit(sortedComputerArmy.getUnits(), attackedUnit);
                     }
+
                     printBattleLog(playerUnit, attackedUnit);
                     playerCount++;
                 }
@@ -47,9 +49,11 @@ public class SimulateBattleImpl implements SimulateBattle, PrintBattleLog {
                     if (attackedUnit == null) {
                         break;
                     }
+
                     if (!attackedUnit.isAlive()) {
                         removeUnit(sortedPlayerArmy.getUnits(), attackedUnit);
                     }
+
                     printBattleLog(computerUnit, attackedUnit);
                     computerCount++;
                 }
@@ -73,6 +77,8 @@ public class SimulateBattleImpl implements SimulateBattle, PrintBattleLog {
 
     private Army getSortedArmy(Army army) {
         army.getUnits().sort((unit1, unit2) -> Integer.compare(unit2.getBaseAttack(), unit1.getBaseAttack()));
+
+        System.out.println(army.getUnits());
 
         return army;
     }

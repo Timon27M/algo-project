@@ -2,79 +2,115 @@ package programs;
 
 import com.battle.heroes.army.Unit;
 import com.battle.heroes.army.programs.Edge;
+import com.battle.heroes.army.programs.EdgeDistance;
 import com.battle.heroes.army.programs.UnitTargetPathFinder;
 
 import java.util.*;
 
 public class UnitTargetPathFinderImpl implements UnitTargetPathFinder {
+    private static final int WIDTH = 27;
+    private static final int HEIGHT = 21;
+
+    private static final int[][] DIRECTIONS = {
+            {-1, -1}, {-1, 0}, {-1, 1},
+            {0, -1}, {0, 1},
+            {1, -1}, {1, 0}, {1, 1}
+    };
+
     @Override
-    public List<Edge> getTargetPath(Unit attackUnit, Unit targetUnit, List<Unit> existingUnitList) {
-        // Ваше решение
-        final int WIDTH = 27;
-        final int HEIGHT = 21;
-
-        boolean[][] blocked = new boolean[WIDTH][HEIGHT];
-
-        // Помечаем клетки, занятые другими юнитами
-        for (Unit unit : existingUnitList) {
-            if (unit == attackUnit || unit == targetUnit) {
-                continue;
-            }
-            blocked[unit.getxCoordinate()][unit.getyCoordinate()] = true;
-        }
+    public List<Edge> getTargetPath(Unit attackUnit,
+                                    Unit targetUnit,
+                                    List<Unit> existingUnitList) {
 
         int startX = attackUnit.getxCoordinate();
         int startY = attackUnit.getyCoordinate();
+
         int targetX = targetUnit.getxCoordinate();
         int targetY = targetUnit.getyCoordinate();
 
-        boolean[][] visited = new boolean[WIDTH][HEIGHT];
-        Edge[][] parent = new Edge[WIDTH][HEIGHT];
+        boolean[][] blocked = buildBlockedMap(existingUnitList, targetX, targetY);
 
-        Queue<Edge> queue = new ArrayDeque<>();
-        queue.add(new Edge(startX, startY));
-        visited[startX][startY] = true;
+        int[][] distance = new int[WIDTH][HEIGHT];
+        Edge[][] previous = new Edge[WIDTH][HEIGHT];
 
-        // 8 направлений (включая диагонали)
-        int[] dx = {-1, -1, -1, 0, 0, 1, 1, 1};
-        int[] dy = {-1, 0, 1, -1, 1, -1, 0, 1};
+        for (int[] row : distance) {
+            Arrays.fill(row, Integer.MAX_VALUE);
+        }
+
+        PriorityQueue<EdgeDistance> queue =
+                new PriorityQueue<>(Comparator.comparingInt(EdgeDistance::getDistance));
+
+        distance[startX][startY] = 0;
+        queue.add(new EdgeDistance(startX, startY, 0));
 
         while (!queue.isEmpty()) {
-            Edge current = queue.poll();
+            EdgeDistance current = queue.poll();
 
             if (current.getX() == targetX && current.getY() == targetY) {
                 break;
             }
 
-            for (int i = 0; i < 8; i++) {
-                int nx = current.getX() + dx[i];
-                int ny = current.getY() + dy[i];
+            for (int[] dir : DIRECTIONS) {
+                int nx = current.getX() + dir[0];
+                int ny = current.getY() + dir[1];
 
-                if (nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT) {
-                    continue;
-                }
-                if (visited[nx][ny] || blocked[nx][ny]) {
+                if (!isInside(nx, ny) || blocked[nx][ny]) {
                     continue;
                 }
 
-                visited[nx][ny] = true;
-                parent[nx][ny] = current;
-                queue.add(new Edge(nx, ny));
+                int newDist = current.getDistance() + 1;
+
+                if (newDist < distance[nx][ny]) {
+                    distance[nx][ny] = newDist;
+                    previous[nx][ny] = new Edge(current.getX(), current.getY());
+                    queue.add(new EdgeDistance(nx, ny, newDist));
+                }
             }
         }
 
-        // Если путь не найден
-        if (!visited[targetX][targetY]) {
-            return List.of();
+        return restorePath(previous, startX, startY, targetX, targetY);
+    }
+
+    private boolean[][] buildBlockedMap(List<Unit> units, int targetX, int targetY) {
+        boolean[][] blocked = new boolean[WIDTH][HEIGHT];
+
+        for (Unit unit : units) {
+            if (!unit.isAlive()) {
+                continue;
+            }
+            int x = unit.getxCoordinate();
+            int y = unit.getyCoordinate();
+
+            if (x == targetX && y == targetY) {
+                continue;
+            }
+
+            blocked[x][y] = true;
+        }
+        return blocked;
+    }
+
+    private boolean isInside(int x, int y) {
+        return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT;
+    }
+
+    private List<Edge> restorePath(Edge[][] previous,
+                                   int startX, int startY,
+                                   int targetX, int targetY) {
+
+        List<Edge> path = new ArrayList<>();
+        Edge current = previous[targetX][targetY];
+
+        path.add(new Edge(targetX, targetY));
+        while (current != null &&
+                !(current.getX() == startX && current.getY() == startY)) {
+
+            path.add(current);
+            current = previous[current.getX()][current.getY()];
         }
 
-        // Восстановление кратчайшего пути
-        List<Edge> path = new ArrayList<>();
-        Edge step = new Edge(targetX, targetY);
-
-        while (step != null) {
-            path.add(step);
-            step = parent[step.getX()][step.getY()];
+        if (current != null) {
+            path.add(new Edge(startX, startY));
         }
 
         Collections.reverse(path);
