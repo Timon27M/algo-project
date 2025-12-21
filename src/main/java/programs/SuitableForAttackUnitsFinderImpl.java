@@ -4,31 +4,41 @@ import com.battle.heroes.army.Unit;
 import com.battle.heroes.army.programs.SuitableForAttackUnitsFinder;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class SuitableForAttackUnitsFinderImpl implements SuitableForAttackUnitsFinder {
 
     @Override
     public List<Unit> getSuitableUnits(List<List<Unit>> unitsByRow, boolean isLeftArmyTarget) {
-        List<Unit> suitableUnits = new ArrayList<>();
+        List<Unit> resultUnits = new ArrayList();
 
-        for (List<Unit> row : unitsByRow) {
-            int rowSize = row.size();
-            if (rowSize == 0) {
-                continue;
-            }
+        for (int i = 0; i < 3; i++) {
+            HashSet<Integer> yCoordinateUnits = getYCoordinateUnits(unitsByRow.get(i));
 
-            if (isLeftArmyTarget) {
-                // атакуется левая армия → нужен юнит без соседа слева
-                // первый в ряду всегда не закрыт слева
-                suitableUnits.add(row.get(0));
-            } else {
-                // атакуется правая армия → нужен юнит без соседа справа
-                // последний в ряду всегда не закрыт справа
-                suitableUnits.add(row.get(rowSize - 1));
+            for (Unit unit : unitsByRow.get(i)) {
+                if (unit.getyCoordinate() == 0) {
+                    resultUnits.add(unit);
+                    continue;
+                }
+
+                if (!yCoordinateUnits.contains(unit.getyCoordinate() - 1)) {
+                    resultUnits.add(unit);
+                }
             }
         }
 
-        return suitableUnits;
+        return resultUnits;
     }
+
+    private HashSet<Integer> getYCoordinateUnits(List<Unit> units) {
+        HashSet<Integer> yCoordinateUnits = new HashSet();
+
+        for (Unit unit : units) {
+            yCoordinateUnits.add(unit.getyCoordinate());
+        }
+
+        return yCoordinateUnits;
+    }
+
 }
