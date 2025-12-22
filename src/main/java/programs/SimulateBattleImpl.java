@@ -7,7 +7,7 @@ import com.battle.heroes.army.programs.SimulateBattle;
 
 import java.util.*;
 
-public class SimulateBattleImpl implements SimulateBattle, PrintBattleLog {
+public class SimulateBattleImpl implements SimulateBattle {
     PrintBattleLog printBattleLog;
 
     @Override
@@ -22,6 +22,10 @@ public class SimulateBattleImpl implements SimulateBattle, PrintBattleLog {
             while (true) {
                 List<Unit> sortedPlayerUnits = sortedPlayerArmy.getUnits();
                 List<Unit> sortedComputerUnits = sortedComputerArmy.getUnits();
+
+                if (sortedPlayerUnits.isEmpty() || sortedComputerUnits.isEmpty()) {
+                    break;
+                }
 
                 Unit playerUnit = sortedPlayerUnits.size() > playerCount ? sortedPlayerUnits.get(playerCount) : null;
                 Unit computerUnit = sortedComputerUnits.size() > computerCount ? sortedComputerUnits.get(computerCount) : null;
@@ -40,7 +44,7 @@ public class SimulateBattleImpl implements SimulateBattle, PrintBattleLog {
                         removeUnit(sortedComputerArmy.getUnits(), attackedUnit);
                     }
 
-                    printBattleLog(playerUnit, attackedUnit);
+                    printBattleLog.printBattleLog(playerUnit, attackedUnit);
                     playerCount++;
                 }
 
@@ -54,7 +58,7 @@ public class SimulateBattleImpl implements SimulateBattle, PrintBattleLog {
                         removeUnit(sortedPlayerArmy.getUnits(), attackedUnit);
                     }
 
-                    printBattleLog(computerUnit, attackedUnit);
+                    printBattleLog.printBattleLog(computerUnit, attackedUnit);
                     computerCount++;
                 }
             }
@@ -78,14 +82,7 @@ public class SimulateBattleImpl implements SimulateBattle, PrintBattleLog {
     private Army getSortedArmy(Army army) {
         army.getUnits().sort((unit1, unit2) -> Integer.compare(unit2.getBaseAttack(), unit1.getBaseAttack()));
 
-        System.out.println(army.getUnits());
-
         return army;
     }
 
-    @Override
-    public void printBattleLog(Unit unit, Unit unit1) {
-        System.out.println("Атакующий: " + (unit != null ? unit.getName() : null));
-        System.out.println("Цель атаки: " + (unit1 != null ? unit1.getName() : null));
-    }
 }

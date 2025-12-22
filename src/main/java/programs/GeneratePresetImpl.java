@@ -7,6 +7,8 @@ import com.battle.heroes.army.programs.GeneratePreset;
 import java.util.*;
 
 public class GeneratePresetImpl implements GeneratePreset {
+    private final Random random = new Random();
+    private HashSet<Coordinate> coordinates = new HashSet<Coordinate>();
 
     @Override
     public Army generate(List<Unit> unitList, int maxPoints) {
@@ -27,27 +29,25 @@ public class GeneratePresetImpl implements GeneratePreset {
         List<Unit> result = new ArrayList<>();
         int currentPoints = maxPoints;
 
-        byte currentHeightCell = 0;
-        byte currentWidthCell = 0;
         for (Unit template : unitList) {
             int count = 0;
 
             while (count < 11 && currentPoints >= template.getCost()) {
-                if (currentPoints < template.getCost()) {
-                    break;
-                }
-                if (currentHeightCell > 20 && currentWidthCell < 4) {
-                    currentWidthCell += 1;
-                    currentHeightCell = 0;
-                } else if (currentWidthCell > 3) {
-                    break;
-                }
-                Unit copy = new Unit(template.getUnitType() + " " + count, template.getUnitType(), template.getHealth(), template.getBaseAttack(), template.getCost(), template.getAttackType(), template.getAttackBonuses(), template.getDefenceBonuses(), currentWidthCell, currentHeightCell);
+                Coordinate coordinate;
+                do {
+                    coordinate = new Coordinate(
+                            random.nextInt(3),
+                            random.nextInt(21)
+                    );
+                } while (coordinates.contains(coordinate));
+
+                coordinates.add(coordinate);
+
+                Unit copy = new Unit(template.getUnitType() + " " + count, template.getUnitType(), template.getHealth(), template.getBaseAttack(), template.getCost(), template.getAttackType(), template.getAttackBonuses(), template.getDefenceBonuses(), coordinate.getX(), coordinate.getY());
 
                 result.add(copy);
                 currentPoints -= template.getCost();
                 count++;
-                currentHeightCell += 1;
             }
         }
 
@@ -55,5 +55,44 @@ public class GeneratePresetImpl implements GeneratePreset {
         army.setUnits(result);
         army.setPoints(maxPoints - currentPoints);
         return army;
+    }
+
+    private static class Coordinate {
+        private int x;
+        private int y;
+
+        public Coordinate(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+
+        public int getX() {
+            return x;
+        }
+
+        public void setX(int x) {
+            this.x = x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public void setY(int y) {
+            this.y = y;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Coordinate c)) return false;
+            return x == c.x && y == c.y;
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * x + y;
+        }
     }
 }

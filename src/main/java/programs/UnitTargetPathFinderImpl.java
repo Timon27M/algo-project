@@ -68,6 +68,11 @@ public class UnitTargetPathFinderImpl implements UnitTargetPathFinder {
             }
         }
 
+        if (queue.poll() == null) {
+            System.out.println("Unit не нашел путь для атаки");
+            return new ArrayList();
+        }
+
         return restorePath(previous, startX, startY, targetX, targetY);
     }
 
@@ -102,8 +107,7 @@ public class UnitTargetPathFinderImpl implements UnitTargetPathFinder {
         Edge current = previous[targetX][targetY];
 
         path.add(new Edge(targetX, targetY));
-        while (current != null &&
-                !(current.getX() == startX && current.getY() == startY)) {
+        while (current != null && !(current.getX() == startX && current.getY() == startY)) {
 
             path.add(current);
             current = previous[current.getX()][current.getY()];
